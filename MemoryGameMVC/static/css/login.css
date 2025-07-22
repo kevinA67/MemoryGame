@@ -1,0 +1,60 @@
+ body {
+           margin: 0;
+      padding: 0;
+      background-image: url('../images/fon.jpg');
+      background-size: cover;        /* ajusta la imagen al tamaño de la pantalla */
+      background-repeat: no-repeat;  /* evita que se repita */
+      background-position: center;   /* centra la imagen */
+      height: 100vh;  
+     
+        }
+        .container {
+            width: 255px;
+            margin: 50px auto; 
+            background: #062d5d;
+            padding: 30px;
+            border-radius: 15px;
+            color: white;
+            text-align: center;
+            box-shadow: 0 4px 20px rgb(106, 238, 216);
+        }
+        input {
+            width: 90%;
+            padding: 10px;
+            margin: 10px 0;
+            border: none;
+            border-radius: 5px;
+        }
+        button {
+            background: #06e4ca;
+            color: whitesmoke;
+            padding: 10px;
+            margin: 10px;
+            border: none;
+            width: 80%;
+            border-radius: 5px;
+            font-weight: bold;
+        }
+        button:hover{
+            background-color: #08f7db;
+        }
+        a {
+            color: #00e0c7;
+            text-decoration: none;
+        }
+        a:hover{
+            color: #93f5e9;
+        }
+        .Memory{
+            margin: 5px;
+            font-size: 45px;
+           font-family: 'Satisfy', cursive;
+                }
+        .game{
+            margin: 5px;
+            font-size: 25;
+            font-style: oblique;
+        }
+
+
+      

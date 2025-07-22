@@ -1,0 +1,182 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Juego de Memoria - Frutas</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <style>
+    #game-board {
+      margin-top: 20px;
+      display: grid;
+      justify-content: center;
+      gap: 10px;
+    }
+    .card {
+      width: 100px;
+      height: 100px;
+      background-color: #4e73df;
+      border-radius: 8px;
+      cursor: pointer;
+      user-select: none;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      margin: 5px;
+    }
+    .card.matched {
+      background-color: #2ecc71;
+      cursor: default;
+    }
+  </style>
+</head>
+<body class="bg-light d-flex flex-column align-items-center justify-content-center min-vh-100">
+
+  <div class="container text-center">
+    <h1 class="mb-4">Juego de Memoria 🍓</h1>
+
+    <div class="mb-3">
+      <label for="level" class="form-label">Selecciona Nivel:</label>
+      <select id="level" class="form-select w-auto mx-auto">
+        <option value="1">Fácil (4 pares)</option>
+        <option value="2">Medio (6 pares)</option>
+        <option value="3">Difícil (8 pares)</option>
+      </select>
+    </div>
+
+    <div class="d-flex justify-content-around my-3">
+      <div><strong>Tiempo:</strong> <span id="time">60</span>s</div>
+      <div><strong>Puntos:</strong> <span id="score">0</span></div>
+    </div>
+
+    <div id="game-board"></div>
+
+    <button class="btn btn-primary mt-4" onclick="startGame()">Iniciar Juego</button>
+  </div>
+
+  <script>
+    const fruits = [
+      "{% static 'images/manzana.png' %}",
+      "{% static 'images/minimo.png' %}",
+      "{% static 'images/cherry.png' %}",
+      "{% static 'images/uva.png' %}",
+      "{% static 'images/kiwi.png' %}",
+      "{% static 'images/fresa.png' %}",
+      "{% static 'images/pina.png' %}",
+      "{% static 'images/sandia.png' %}"
+    ];
+
+    let gameBoard = document.getElementById('game-board');
+    let timeDisplay = document.getElementById('time');
+    let scoreDisplay = document.getElementById('score');
+    let levelSelect = document.getElementById('level');
+
+    let flippedCards = [];
+    let matchedPairs = 0;
+    let score = 0;
+    let timeLeft = 60;
+    let timer;
+    let totalPairs;
+
+    function shuffle(array) {
+      for (let i = array.length -1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i+1));
+        [array[i], array[j]] = [array[j], array[i]];
+      }
+      return array;
+    }
+
+    function startGame() {
+      clearInterval(timer);
+      timeLeft = 60;
+      score = 0;
+      matchedPairs = 0;
+      scoreDisplay.textContent = score;
+      timeDisplay.textContent = timeLeft;
+
+      let level = parseInt(levelSelect.value);
+      totalPairs = level === 1 ? 4 : level === 2 ? 6 : 8;
+
+      let selectedFruits = fruits.slice(0, totalPairs);
+      let cards = shuffle([...selectedFruits, ...selectedFruits]);
+
+      gameBoard.innerHTML = '';
+
+      // Calcular columnas para cuadrícula
+      const columns = Math.ceil(Math.sqrt(totalPairs * 2));
+      gameBoard.style.display = 'grid';
+      gameBoard.style.gridTemplateColumns = `repeat(${columns}, 100px)`;
+      gameBoard.style.justifyContent = 'center';
+      gameBoard.style.gap = '10px';
+
+      cards.forEach(fruit => {
+        let card = document.createElement('div');
+        card.classList.add('card');
+        card.dataset.fruit = fruit;
+
+        let img = document.createElement('img');
+        img.src = fruit;
+        img.style.width = '80px';
+        img.style.height = '80px';
+        img.style.visibility = 'hidden';  // oculto al principio
+
+        card.appendChild(img);
+
+        card.addEventListener('click', () => flipCard(card));
+        gameBoard.appendChild(card);
+      });
+
+      timer = setInterval(() => {
+        timeLeft--;
+        timeDisplay.textContent = timeLeft;
+        if (timeLeft <= 0) {
+          clearInterval(timer);
+          alert(`Se acabó el tiempo! Puntuación final: ${score}`);
+          gameBoard.innerHTML = '';
+        }
+      }, 1000);
+    }
+
+    function flipCard(card) {
+      if (flippedCards.length >= 2 || flippedCards.includes(card) || card.classList.contains('matched')) {
+        return;
+      }
+
+      let img = card.querySelector('img');
+      img.style.visibility = 'visible';
+      flippedCards.push(card);
+
+      if (flippedCards.length === 2) {
+        checkMatch();
+      }
+    }
+
+    function checkMatch() {
+      let [card1, card2] = flippedCards;
+      let img1 = card1.querySelector('img');
+      let img2 = card2.querySelector('img');
+
+      if (card1.dataset.fruit === card2.dataset.fruit) {
+        card1.classList.add('matched');
+        card2.classList.add('matched');
+        score += 10;
+        matchedPairs++;
+        scoreDisplay.textContent = score;
+
+        if (matchedPairs === totalPairs) {
+          clearInterval(timer);
+          alert(`¡Ganaste! Puntuación final: ${score}`);
+          gameBoard.innerHTML = '';
+        }
+      } else {
+        setTimeout(() => {
+          img1.style.visibility = 'hidden';
+          img2.style.visibility = 'hidden';
+        }, 1000);
+      }
+      flippedCards = [];
+    }
+  </script>
+</body>
+</html>

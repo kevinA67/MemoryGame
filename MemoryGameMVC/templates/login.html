@@ -1,0 +1,34 @@
+{% load static %}
+
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Memory Game - Login</title>
+    <!-- <link rel="stylesheet" href="../MemoryGameMVC/static/css/login.css"> -->
+     <link rel="stylesheet" href="{% static 'css/login.css' %}">
+ <link href="https://fonts.googleapis.com/css2?family=Satisfy&display=swap" rel="stylesheet">
+ <!--<script src="/javascript/login.js"></script>-->
+</head>
+<body>
+     <div class="container">
+        <img src="{% static 'images/cartas-de-poquer.png' %}" alt="null" style="width: 50px;">
+        <p class="Memory">Memory</p>
+        <p class="game">- G A M E</p>
+
+
+        <form method="POST">
+            <input type="text" name="username" placeholder="Usuario" required>
+            <input type="password" name="password" placeholder="Contraseña" required>
+            <button type="submit">Iniciar sesión</button>
+        </form>
+        <p>¿Aun no tines una cuenta? <a id="ir_resgistro" href="registrarse.html">Registrate</a></p>
+    </div>
+
+
+
+   
+</body>
+</html>
