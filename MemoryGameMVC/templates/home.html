@@ -132,17 +132,16 @@
 
     <button class="btn btn-primary mt-4" onclick="startGame()">Iniciar Juego</button>
   </div>
-
   <script>
     const fruits = [
-      "{% static 'images/manzana.png' %}",
-      "{% static 'images/minimo.png' %}",
-      "{% static 'images/cherry.png' %}",
-      "{% static 'images/uva.png' %}",
-      "{% static 'images/kiwi.png' %}",
-      "{% static 'images/fresa.png' %}",
-      "{% static 'images/pina.png' %}",
-      "{% static 'images/sandia.png' %}"
+      "{% static '../static/images/manzana.png' %}",
+      "{% static '../static/images/minimo.png' %}",
+      "{% static '../static/images/cherry.png' %}",
+      "{% static '../static/images/uva.png' %}",
+      "{% static '../static/images/kiwi.png' %}",
+      "{% static '../static/images/fresa.png' %}",
+      "{% static '../static/images/pina.png' %}",
+      "{% static '../static/images/sandia.png' %}"
     ];
 
     let gameBoard = document.getElementById('game-board');
