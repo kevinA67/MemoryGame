@@ -83,13 +83,14 @@ WSGI_APPLICATION = 'MemoryGame.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.mysql',
-        'NAME': 'mydb',
-        'USER': 'myuser',
-        'PASSWORD': 'mypassword',
-        'HOST': 'db',
+        'NAME': 'memorygame_db',          # nombre de la base de datos que creaste
+        'USER': 'memoryuser',             # usuario MySQL que creaste
+        'PASSWORD': 'tu_contraseña_segura',  # la contraseña que pusiste
+        'HOST': 'localhost',              # porque MySQL está en tu máquina local
         'PORT': '3306',
     }
 }
+
 
 
 
