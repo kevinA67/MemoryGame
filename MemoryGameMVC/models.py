@@ -1,16 +1,12 @@
+# models.py
 from django.db import models
+from django.contrib.auth.models import User
 
 class GameResult(models.Model):
-    DIFFICULTY_CHOICES = [
-        ('easy', 'Fácil'),
-        ('medium', 'Media'),
-        ('hard', 'Difícil'),
-    ]
-
-    difficulty = models.CharField(max_length=10, choices=DIFFICULTY_CHOICES)
-    won = models.BooleanField()  # True si ganó, False si perdió
-    played_at = models.DateTimeField(auto_now_add=True)
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    score = models.IntegerField()
+    won = models.BooleanField()
+    date_played = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
-        estado = "Ganó" if self.won else "Perdió"
-        return f"{estado} en {self.get_difficulty_display()} - {self.played_at.strftime('%Y-%m-%d %H:%M')}"
+        return f"{self.user.username} - {'Ganó' if self.won else 'Perdió'} - {self.score}"

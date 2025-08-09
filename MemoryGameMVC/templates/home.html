@@ -5,12 +5,12 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Juego de Memoria - Frutas</title>
-  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-   <style>
-       body {
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet" />
+  <style>
+    body {
       margin: 0;
       padding: 0;
-      background-image: url('../static/images/fon.jpg');
+      background-image: url("{% static 'images/fon.jpg' %}");
       background-size: cover;
       background-repeat: no-repeat;
       background-position: center;
@@ -21,7 +21,7 @@
       align-items: center;
       justify-content: center;
     }
-       .container {
+    .container {
       background-color: rgba(21, 51, 80, 0.8);
       border-radius: 10px;
       box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
@@ -40,7 +40,6 @@
       display: grid;
       justify-content: center;
       gap: 2vw;
-      /* El ancho máximo del tablero se adapta */
       max-width: 95vw;
       width: 100%;
     }
@@ -69,14 +68,11 @@
       background-color: #2ecc71;
       cursor: default;
     }
-    h1{
+    h1 {
       color: #fff;
       text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
       font-size: 2vw;
     }
-  
-
-
     @media (max-width: 600px) {
       .container {
         padding: 3vw;
@@ -97,7 +93,6 @@
         gap: 3vw;
       }
     }
-
     .colorletra {
       color: #fff;
     }
@@ -109,39 +104,49 @@
     <h1 class="mb-4">Juego de Memoria 🍓</h1>
 
     <div class="d-flex flex-column flex-md-row justify-content-between align-items-center mb-3" style="gap: 1.5rem;">
-  <div class="d-flex align-items-center" style="gap: 0.5rem;">
-    <label for="level" class="form-label colorletra mb-0">Selecciona Nivel:</label>
-    <select id="level" class="form-select w-auto">
-      <option value="1">Fácil (4 pares)</option>
-      <option value="2">Medio (6 pares)</option>
-      <option value="3">Difícil (8 pares)</option>
-    </select>
-  </div>
-  <div class="d-flex align-items-center" style="gap: 1rem;">
-    <span class="badge bg-primary fs-5 px-3 py-2 colorletra">
-      <strong>Tiempo:</strong> <span id="time">60</span>s
-    </span>
-    <span class="badge bg-success fs-5 px-3 py-2 colorletra">
-      <strong>Puntos:</strong> <span id="score">0</span>
-    </span>
-  </div>
-</div>
-   
+      <div class="d-flex align-items-center" style="gap: 0.5rem;">
+        <label for="level" class="form-label colorletra mb-0">Selecciona Nivel:</label>
+        <select id="level" class="form-select w-auto">
+          <option value="1">Fácil (4 pares)</option>
+          <option value="2">Medio (6 pares)</option>
+          <option value="3">Difícil (8 pares)</option>
+        </select>
+      </div>
+      <div class="d-flex align-items-center" style="gap: 1rem;">
+        <span class="badge bg-primary fs-5 px-3 py-2 colorletra">
+          <strong>Tiempo:</strong> <span id="time">60</span>s
+        </span>
+        <span class="badge bg-success fs-5 px-3 py-2 colorletra">
+          <strong>Puntos:</strong> <span id="score">0</span>
+        </span>
+      </div>
+    </div>
 
     <div id="game-board"></div>
 
     <button class="btn btn-primary mt-4" onclick="startGame()">Iniciar Juego</button>
   </div>
+
   <script>
+    // Carga los sonidos usando static de Django
+    const soundSelect = new Audio("{% static 'sounds/select.mp3' %}");
+    const soundWin = new Audio("{% static 'sounds/win.mp3' %}");
+    const soundLose = new Audio("{% static 'sounds/lose.mp3' %}");
+    const backgroundMusic = new Audio("{% static 'sounds/background.mp3' %}");
+
+    backgroundMusic.loop = true;
+    backgroundMusic.volume = 0.3;
+    // No iniciar la música aquí automáticamente para evitar bloqueo del navegador.
+
     const fruits = [
-      "{% static '../static/images/manzana.png' %}",
-      "{% static '../static/images/minimo.png' %}",
-      "{% static '../static/images/cherry.png' %}",
-      "{% static '../static/images/uva.png' %}",
-      "{% static '../static/images/kiwi.png' %}",
-      "{% static '../static/images/fresa.png' %}",
-      "{% static '../static/images/pina.png' %}",
-      "{% static '../static/images/sandia.png' %}"
+      "{% static 'images/manzana.png' %}",
+      "{% static 'images/minimo.png' %}",
+      "{% static 'images/cherry.png' %}",
+      "{% static 'images/uva.png' %}",
+      "{% static 'images/kiwi.png' %}",
+      "{% static 'images/fresa.png' %}",
+      "{% static 'images/pina.png' %}",
+      "{% static 'images/sandia.png' %}"
     ];
 
     let gameBoard = document.getElementById('game-board');
@@ -180,7 +185,6 @@
 
       gameBoard.innerHTML = '';
 
-      // Calcular columnas para cuadrícula
       const columns = Math.ceil(Math.sqrt(totalPairs * 2));
       gameBoard.style.display = 'grid';
       gameBoard.style.gridTemplateColumns = `repeat(${columns}, 100px)`;
@@ -196,7 +200,7 @@
         img.src = fruit;
         img.style.width = '50px';
         img.style.height = '50px';
-        img.style.visibility = 'hidden';  // oculto al principio
+        img.style.visibility = 'hidden';
 
         card.appendChild(img);
 
@@ -204,11 +208,18 @@
         gameBoard.appendChild(card);
       });
 
+      // Iniciar la música cuando se inicia el juego
+      backgroundMusic.play().catch(e => {
+        console.log("No se pudo reproducir la música automáticamente:", e);
+      });
+
       timer = setInterval(() => {
         timeLeft--;
         timeDisplay.textContent = timeLeft;
         if (timeLeft <= 0) {
           clearInterval(timer);
+          backgroundMusic.pause();  // Pausa la música al perder
+          soundLose.play();
           alert(`Se acabó el tiempo! Puntuación final: ${score}`);
           gameBoard.innerHTML = '';
         }
@@ -219,6 +230,9 @@
       if (flippedCards.length >= 2 || flippedCards.includes(card) || card.classList.contains('matched')) {
         return;
       }
+
+      soundSelect.currentTime = 0;
+      soundSelect.play();
 
       let img = card.querySelector('img');
       img.style.visibility = 'visible';
@@ -243,6 +257,8 @@
 
         if (matchedPairs === totalPairs) {
           clearInterval(timer);
+          backgroundMusic.pause();  // Pausa la música al ganar
+          soundWin.play();
           alert(`¡Ganaste! Puntuación final: ${score}`);
           gameBoard.innerHTML = '';
         }
