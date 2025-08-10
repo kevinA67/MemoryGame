@@ -1,0 +1,107 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block title %}Mi Perfil{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+  <h1 class="mb-3">Perfil</h1>
+  <a href="{% url 'home' %}" class="btn btn-secondary mb-3">Volver al juego</a>
+
+  <div class="row g-3">
+    <div class="col-md-3">
+      <div class="card text-bg-dark h-100">
+        <div class="card-body">
+          <div class="h5 mb-1">Partidas</div>
+          <div class="display-6">{{ total }}</div>
+          <div class="small text-secondary">Total jugadas</div>
+        </div>
+      </div>
+    </div>
+    <div class="col-md-3">
+      <div class="card text-bg-success h-100">
+        <div class="card-body">
+          <div class="h5 mb-1">Ganadas</div>
+          <div class="display-6">{{ wins }}</div>
+          <div class="small">Tasa de victoria: {{ win_rate }}%</div>
+        </div>
+      </div>
+    </div>
+    <div class="col-md-3">
+      <div class="card text-bg-danger h-100">
+        <div class="card-body">
+          <div class="h5 mb-1">Perdidas</div>
+          <div class="display-6">{{ losses }}</div>
+          <div class="small">Última: {{ last_played|date:"d/m/Y H:i" }}</div>
+        </div>
+      </div>
+    </div>
+    <div class="col-md-3">
+      <div class="card text-bg-primary h-100">
+        <div class="card-body">
+          <div class="h5 mb-1">Mejor Puntaje</div>
+          <div class="display-6">{{ top_score }}</div>
+          <div class="small">Nivel más jugado: {{ most_level_name }}</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="row g-3 mt-3">
+    <div class="col-md-6">
+      <div class="card text-bg-dark h-100">
+        <div class="card-body">
+          <div class="h5 mb-2">Promedios</div>
+          <p class="mb-1">⏱️ Tiempo promedio: <strong>{{ avg_time_str }}</strong></p>
+          <p class="mb-0">⭐ Puntaje promedio: <strong>{{ avg_score }}</strong></p>
+        </div>
+      </div>
+    </div>
+    <div class="col-md-6">
+      <div class="card text-bg-dark h-100">
+        <div class="card-body">
+          <div class="h5 mb-2">Últimas partidas</div>
+          {% if recent %}
+          <div class="table-responsive">
+            <table class="table table-dark table-striped table-sm align-middle mb-0">
+              <thead>
+                <tr>
+                  <th>Fecha</th>
+                  <th>Resultado</th>
+                  <th>Nivel</th>
+                  <th>Tiempo</th>
+                  <th>Puntos</th>
+                </tr>
+              </thead>
+              <tbody>
+                {% for r in recent %}
+                <tr>
+                  <td>{{ r.date_played|date:"d/m/Y H:i" }}</td>
+                  <td>
+                    {% if r.won %}
+                      <span class="badge bg-success">Ganada</span>
+                    {% else %}
+                      <span class="badge bg-danger">Perdida</span>
+                    {% endif %}
+                  </td>
+                  <td>
+                    {% if r.level == 1 %}Básico
+                    {% elif r.level == 2 %}Medio
+                    {% elif r.level == 3 %}Avanzado
+                    {% else %}{{ r.level }}{% endif %}
+                  </td>
+                  <td>{{ r.duration_seconds }}s</td>
+                  <td>{{ r.score }}</td>
+                </tr>
+                {% endfor %}
+              </tbody>
+            </table>
+          </div>
+          {% else %}
+            <p class="mb-0">Aún no hay partidas registradas.</p>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

@@ -1,275 +1,414 @@
+{% extends 'base.html' %}
 {% load static %}
-<!DOCTYPE html>
-<html lang="es">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Juego de Memoria - Frutas</title>
-  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet" />
-  <style>
-    body {
-      margin: 0;
-      padding: 0;
-      background-image: url("{% static 'images/fon.jpg' %}");
-      background-size: cover;
-      background-repeat: no-repeat;
-      background-position: center;
-      height: 100vh;
-      width: 100vw;
-      overflow: hidden; /* Evita doble scroll */
-      display: flex;
-      align-items: center;
-      justify-content: center;
-    }
-    .container {
-      background-color: rgba(21, 51, 80, 0.8);
-      border-radius: 10px;
-      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
-      padding: 2vw;
-      max-width: 800px;
-      width: 95vw;
-      max-height: 95vh;
-      overflow-y: auto; /* Permite scroll interno si el tablero crece */
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: flex-start;
-    }
-    #game-board {
-      margin-top: 20px;
-      display: grid;
-      justify-content: center;
-      gap: 2vw;
-      max-width: 95vw;
-      width: 100%;
-    }
-    .card {
-      width: 1vw;
-      max-width: 100px;
-      min-width: 60px;
-      height: 1vw;
-      max-height: 100px;
-      min-height: 60px;
-      background-color: #3c95fc;
-      border-radius: 8px;
-      cursor: pointer;
-      user-select: none;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      margin: 0;
-      margin-left: 17%;
-      transition: transform 0.2s;
-    }
-    .card:active {
-      transform: scale(0.97);
-    }
-    .card.matched {
-      background-color: #2ecc71;
-      cursor: default;
-    }
-    h1 {
-      color: #fff;
-      text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
-      font-size: 2vw;
-    }
-    @media (max-width: 600px) {
-      .container {
-        padding: 3vw;
-        max-width: 98vw;
-      }
-      h1 {
-        font-size: 8vw;
-      }
-      .card {
-        width: 22vw;
-        height: 22vw;
-        max-width: 80px;
-        max-height: 80px;
-        min-width: 40px;
-        min-height: 40px;
-      }
-      #game-board {
-        gap: 3vw;
-      }
-    }
-    .colorletra {
-      color: #fff;
-    }
-  </style>
-</head>
-<body class="bg-light d-flex flex-column align-items-center justify-content-center min-vh-100">
+{% block title %}Inicio{% endblock %}
 
-  <div class="container text-center">
-    <h1 class="mb-4">Juego de Memoria 🍓</h1>
+{% block content %}
+<style>
+  /* Fondo SOLO del tablero con tu imagen 'backround' */
+  #game-board {
+    min-height: 520px;
+    padding: 16px;
+    border-radius: 16px;
+    background:
+      linear-gradient(rgba(0,0,0,.35), rgba(0,0,0,.35)),
+      url("{% static 'images/backround.png' %}") center/cover no-repeat;
+    border: 1px solid rgba(255,255,255,.08);
+  }
 
-    <div class="d-flex flex-column flex-md-row justify-content-between align-items-center mb-3" style="gap: 1.5rem;">
-      <div class="d-flex align-items-center" style="gap: 0.5rem;">
-        <label for="level" class="form-label colorletra mb-0">Selecciona Nivel:</label>
-        <select id="level" class="form-select w-auto">
-          <option value="1">Fácil (4 pares)</option>
-          <option value="2">Medio (6 pares)</option>
-          <option value="3">Difícil (8 pares)</option>
-        </select>
-      </div>
-      <div class="d-flex align-items-center" style="gap: 1rem;">
-        <span class="badge bg-primary fs-5 px-3 py-2 colorletra">
-          <strong>Tiempo:</strong> <span id="time">60</span>s
-        </span>
-        <span class="badge bg-success fs-5 px-3 py-2 colorletra">
-          <strong>Puntos:</strong> <span id="score">0</span>
-        </span>
+  /* Cartas correctas en VERDE + animación */
+  .card.matched {
+    background-color: #198754 !important;
+    transform: scale(1.03);
+    box-shadow: 0 0 12px rgba(25,135,84,.6);
+    pointer-events: none;
+    animation: pop 240ms ease-out;
+  }
+  @keyframes pop {
+    0% { transform: scale(1); }
+    60% { transform: scale(1.08); }
+    100% { transform: scale(1.03); }
+  }
+  .card.matched img { visibility: visible !important; }
+
+  /* Progreso fino */
+  .progress { height: 8px; }
+</style>
+
+<div class="container mt-4">
+  <h1 class="mb-3">Juego de Memoria</h1>
+
+  <div class="d-flex align-items-center flex-wrap gap-3 mb-3">
+    <div class="d-flex align-items-center gap-2">
+      <label class="form-label m-0" for="level">Nivel:</label>
+      <select id="level" class="form-select form-select-sm w-auto">
+        <option value="1">Básico (6 intentos, 60s)</option>
+        <option value="2">Medio (4 intentos, 50s)</option>
+        <option value="3">Avanzado (2 intentos, 40s)</option>
+      </select>
+    </div>
+
+    <div class="d-flex align-items-center gap-3">
+      <div>⏱️ Tiempo: <span id="time">0</span>s</div>
+      <div class="flex-grow-1" style="min-width: 220px;">
+        <div class="progress">
+          <div id="time-progress" class="progress-bar bg-success" role="progressbar" style="width: 100%;"></div>
+        </div>
       </div>
     </div>
 
-    <div id="game-board"></div>
-
-    <button class="btn btn-primary mt-4" onclick="startGame()">Iniciar Juego</button>
+    <div class="ms-auto d-flex gap-2">
+      <div class="btn btn-outline-secondary btn-sm disabled">⭐ <span id="score">0</span></div>
+      <div class="btn btn-outline-secondary btn-sm disabled">🎯 <span id="attempts">0</span></div>
+      <button id="startBtn" class="btn btn-primary btn-sm" onclick="startGame()">Iniciar</button>
+      <button id="pauseBtn" class="btn btn-warning btn-sm" onclick="togglePause()" disabled>Pausar</button>
+      <button id="muteBtn" class="btn btn-outline-light btn-sm">🔊 Sonido</button>
+    </div>
   </div>
 
-  <script>
-    // Carga los sonidos usando static de Django
-    const soundSelect = new Audio("{% static 'sounds/select.mp3' %}");
-    const soundWin = new Audio("{% static 'sounds/win.mp3' %}");
-    const soundLose = new Audio("{% static 'sounds/lose.mp3' %}");
-    const backgroundMusic = new Audio("{% static 'sounds/background.mp3' %}");
+  <div id="game-board"></div>
+</div>
 
-    backgroundMusic.loop = true;
-    backgroundMusic.volume = 0.3;
-    // No iniciar la música aquí automáticamente para evitar bloqueo del navegador.
+<!-- Modal de fin de partida -->
+<div class="modal fade" id="endModal" tabindex="-1" aria-labelledby="endModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content bg-dark text-white">
+      <div class="modal-header border-0">
+        <h5 class="modal-title" id="endModalLabel">Resultado</h5>
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+      </div>
+      <div class="modal-body">
+        <p id="endModalText" class="mb-0">—</p>
+      </div>
+      <div class="modal-footer border-0">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
+        <button type="button" class="btn btn-primary" id="playAgainBtn">Volver a jugar</button>
+      </div>
+    </div>
+  </div>
+</div>
 
-    const fruits = [
-      "{% static 'images/manzana.png' %}",
-      "{% static 'images/minimo.png' %}",
-      "{% static 'images/cherry.png' %}",
-      "{% static 'images/uva.png' %}",
-      "{% static 'images/kiwi.png' %}",
-      "{% static 'images/fresa.png' %}",
-      "{% static 'images/pina.png' %}",
-      "{% static 'images/sandia.png' %}"
-    ];
-
-    let gameBoard = document.getElementById('game-board');
-    let timeDisplay = document.getElementById('time');
-    let scoreDisplay = document.getElementById('score');
-    let levelSelect = document.getElementById('level');
-
-    let flippedCards = [];
-    let matchedPairs = 0;
-    let score = 0;
-    let timeLeft = 60;
-    let timer;
-    let totalPairs;
-
-    function shuffle(array) {
-      for (let i = array.length -1; i > 0; i--) {
-        const j = Math.floor(Math.random() * (i+1));
-        [array[i], array[j]] = [array[j], array[i]];
+<!-- ==== Script al final ==== -->
+<script>
+  /************ CSRF para Django ************/
+  function getCookie(name) {
+    let cookieValue = null;
+    if (document.cookie && document.cookie !== "") {
+      const cookies = document.cookie.split(";");
+      for (let i = 0; i < cookies.length; i++) {
+        const cookie = cookies[i].trim();
+        if (cookie.substring(0, name.length + 1) === (name + "=")) {
+          cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+          break;
+        }
       }
-      return array;
     }
+    return cookieValue;
+  }
 
-    function startGame() {
-      clearInterval(timer);
-      timeLeft = 60;
-      score = 0;
-      matchedPairs = 0;
+  /************ Enviar resultado a Django (incluye nivel y segundos) ************/
+  function guardarResultadoPartida(won) {
+    const level = parseInt(document.getElementById('level').value || "1", 10);
+    const secondsUsed = Math.max(0, initialTime - timeLeft); // tiempo jugado
+
+    fetch("{% url 'save_result' %}", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/x-www-form-urlencoded",
+        "X-CSRFToken": getCookie("csrftoken"),
+      },
+      body: `won=${won}&score=${encodeURIComponent(score)}&level=${level}&seconds=${secondsUsed}`,
+    })
+    .then(r => r.json())
+    .then(d => console.log("Resultado guardado:", d))
+    .catch(e => console.error("Error al guardar:", e));
+  }
+
+  // Sonidos
+  const soundSelect = new Audio("{% static 'sounds/select.mp3' %}");
+  const soundWin    = new Audio("{% static 'sounds/win.mp3' %}");
+  const soundLose   = new Audio("{% static 'sounds/lose.mp3' %}");
+  const backgroundMusic = new Audio("{% static 'sounds/background.mp3' %}");
+  backgroundMusic.loop = true;
+  backgroundMusic.volume = 0.3;
+  let soundsMuted = false;
+
+  // Imágenes de frutas (8 pares = 16 cartas, tablero 4x4)
+  const fruits = [
+    "{% static 'images/manzana.png' %}",
+    "{% static 'images/minimo.png' %}",
+    "{% static 'images/cherry.png' %}",
+    "{% static 'images/uva.png' %}",
+    "{% static 'images/kiwi.png' %}",
+    "{% static 'images/fresa.png' %}",
+    "{% static 'images/pina.png' %}",
+    "{% static 'images/sandia.png' %}"
+  ];
+
+  // Referencias
+  const gameBoard  = document.getElementById('game-board');
+  const timeDisplay  = document.getElementById('time');
+  const scoreDisplay = document.getElementById('score');
+  const levelSelect  = document.getElementById('level');
+  const attemptsDisplay = document.getElementById('attempts');
+  const pauseBtn = document.getElementById('pauseBtn');
+  const muteBtn = document.getElementById('muteBtn');
+  const endModalEl = document.getElementById('endModal');
+  const endModalText = document.getElementById('endModalText');
+  const playAgainBtn = document.getElementById('playAgainBtn');
+  const timeBar = document.getElementById('time-progress');
+  let endModal;
+
+  // Estado
+  let flippedCards = [];
+  let matchedPairs = 0;
+  let score = 0;
+  let timeLeft = 0;
+  let timer;
+  const totalPairs = 8;     // SIEMPRE 8 pares (tablero 4x4)
+  let attemptsLeft = 0;
+  let gameOver = false;
+  let initialTime = 0;    // tiempo inicial según nivel
+  let paused = false;
+
+  // Modal bootstrap
+  document.addEventListener('DOMContentLoaded', () => {
+    endModal = new bootstrap.Modal(endModalEl);
+    playAgainBtn.addEventListener('click', () => {
+      endModal.hide();
+      startGame();
+    });
+    muteBtn.addEventListener('click', toggleMute);
+  });
+
+  // Mezclar
+  function shuffle(array) {
+    for (let i = array.length -1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i+1));
+      [array[i], array[j]] = [array[j], array[i]];
+    }
+    return array;
+  }
+
+  // Intentos por nivel (Básico 6, Medio 4, Avanzado 2)
+  function intentosPorNivel(level) {
+    if (level === 1) return 6;
+    if (level === 2) return 4;
+    return 2;
+  }
+
+  // Tiempo por nivel (Básico 60s, Medio 50s, Avanzado 40s)
+  function tiempoPorNivel(level) {
+    if (level === 1) return 60;
+    if (level === 2) return 50;
+    return 40;
+  }
+
+  // ======= Timer helpers =======
+  function startTimer() {
+    clearInterval(timer);
+    timer = setInterval(() => {
+      timeLeft--;
+      updateTimeUI();
+      if (timeLeft <= 0) {
+        endGame(false, "time");
+      }
+    }, 1000);
+  }
+
+  function pauseTimer() {
+    clearInterval(timer);
+  }
+
+  function updateTimeUI() {
+    timeDisplay.textContent = timeLeft;
+    const pct = initialTime > 0 ? Math.max(0, Math.min(100, Math.round((timeLeft / initialTime) * 100))) : 0;
+    timeBar.style.width = pct + '%';
+    timeBar.classList.remove('bg-success','bg-warning','bg-danger');
+    if (pct > 50) timeBar.classList.add('bg-success');
+    else if (pct > 25) timeBar.classList.add('bg-warning');
+    else timeBar.classList.add('bg-danger');
+  }
+
+  // Finalizar juego (centralizado)
+  function endGame(won, reason) {
+    if (gameOver) return;
+    gameOver = true;
+    paused = false;
+    pauseBtn.disabled = true;
+    pauseBtn.textContent = "Pausar";
+    pauseBtn.classList.remove("btn-success");
+    pauseBtn.classList.add("btn-warning");
+
+    clearInterval(timer);
+    backgroundMusic.pause();
+    try { (won ? soundWin : soundLose).play(); } catch {}
+
+    const mensaje = won
+      ? `¡Ganaste! Puntuación final: ${score}`
+      : (reason === "attempts"
+          ? `¡Sin intentos! Puntuación final: ${score}`
+          : `Se acabó el tiempo. Puntuación final: ${score}`);
+
+    // guardar y mostrar modal
+    guardarResultadoPartida(won);
+    gameBoard.innerHTML = '';
+    endModalText.textContent = mensaje;
+    endModal.show();
+  }
+
+  // Iniciar juego
+  function startGame() {
+    clearInterval(timer);
+    gameOver = false;
+    paused = false;
+    pauseBtn.disabled = false;
+    pauseBtn.textContent = "Pausar";
+    pauseBtn.classList.remove("btn-success");
+    pauseBtn.classList.add("btn-warning");
+
+    score = 0;
+    matchedPairs = 0;
+
+    const level = parseInt(levelSelect.value);
+
+    // Configurar TIEMPO según nivel
+    initialTime = tiempoPorNivel(level);
+    timeLeft = initialTime;
+    updateTimeUI();
+
+    // Configurar INTENTOS según nivel
+    attemptsLeft = intentosPorNivel(level);
+    attemptsDisplay.textContent = attemptsLeft;
+
+    scoreDisplay.textContent = score;
+
+    const selectedFruits = fruits.slice(0, totalPairs);
+    const cards = shuffle([...selectedFruits, ...selectedFruits]);
+
+    gameBoard.innerHTML = '';
+
+    // Cuadrícula FIJA 4x4
+    const columns = 4;
+    gameBoard.style.display = 'grid';
+    gameBoard.style.gridTemplateColumns = `repeat(${columns}, 100px)`;
+    gameBoard.style.justifyContent = 'center';
+    gameBoard.style.gap = '10px';
+
+    // Crear cartas
+    cards.forEach(fruit => {
+      const card = document.createElement('div');
+      card.classList.add('card');
+      card.dataset.fruit = fruit;
+
+      const img = document.createElement('img');
+      img.src = fruit;
+      img.style.width = '50px';
+      img.style.height = '50px';
+      img.style.visibility = 'hidden';
+
+      card.appendChild(img);
+      card.style.cssText = `
+        width: 100px;
+        height: 100px;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        background-color: #4e73df;
+        border-radius: 8px;
+        cursor: pointer;
+        user-select: none;
+        transition: transform .2s;
+      `;
+      card.addEventListener('click', () => flipCard(card));
+      gameBoard.appendChild(card);
+    });
+
+    // Música
+    if (!soundsMuted) backgroundMusic.play().catch(() => {});
+
+    // Temporizador (pérdida por tiempo)
+    startTimer();
+  }
+
+  // Pausar/Reanudar
+  function togglePause() {
+    if (gameOver) return;
+    if (!paused) {
+      // Pausar
+      paused = true;
+      pauseTimer();
+      try { backgroundMusic.pause(); } catch {}
+      pauseBtn.textContent = "Reanudar";
+      pauseBtn.classList.remove("btn-warning");
+      pauseBtn.classList.add("btn-success");
+    } else {
+      // Reanudar
+      paused = false;
+      startTimer();
+      if (!soundsMuted) backgroundMusic.play().catch(() => {});
+      pauseBtn.textContent = "Pausar";
+      pauseBtn.classList.remove("btn-success");
+      pauseBtn.classList.add("btn-warning");
+    }
+  }
+
+  // Mute/Unmute
+  function toggleMute() {
+    soundsMuted = !soundsMuted;
+    const all = [soundSelect, soundWin, soundLose, backgroundMusic];
+    all.forEach(a => a.muted = soundsMuted);
+    muteBtn.textContent = soundsMuted ? "🔇 Silencio" : "🔊 Sonido";
+    if (soundsMuted) backgroundMusic.pause(); else if (!paused && !gameOver) backgroundMusic.play().catch(() => {});
+  }
+
+  // Voltear carta
+  function flipCard(card) {
+    if (gameOver || paused) return;
+    if (flippedCards.length >= 2 || flippedCards.includes(card) || card.classList.contains('matched')) return;
+
+    try { if (!soundsMuted) { soundSelect.currentTime = 0; soundSelect.play(); } } catch {}
+
+    const img = card.querySelector('img');
+    img.style.visibility = 'visible';
+    card.style.transform = 'scale(1.03)';
+
+    flippedCards.push(card);
+
+    if (flippedCards.length === 2) {
+      setTimeout(checkMatch, 400);
+    }
+  }
+
+  // Comparar cartas (intentos bajan solo cuando FALLAS)
+  function checkMatch() {
+    const [card1, card2] = flippedCards;
+    const img1 = card1.querySelector('img');
+    const img2 = card2.querySelector('img');
+
+    if (card1.dataset.fruit === card2.dataset.fruit) {
+      card1.classList.add('matched');
+      card2.classList.add('matched');
+      score += 10;
+      matchedPairs++;
       scoreDisplay.textContent = score;
-      timeDisplay.textContent = timeLeft;
 
-      let level = parseInt(levelSelect.value);
-      totalPairs = level === 1 ? 4 : level === 2 ? 6 : 8;
+      if (matchedPairs === totalPairs) {
+        endGame(true);
+      }
+    } else {
+      // Fallo => consumimos 1 intento
+      attemptsLeft = Math.max(0, attemptsLeft - 1);
+      attemptsDisplay.textContent = attemptsLeft;
 
-      let selectedFruits = fruits.slice(0, totalPairs);
-      let cards = shuffle([...selectedFruits, ...selectedFruits]);
-
-      gameBoard.innerHTML = '';
-
-      const columns = Math.ceil(Math.sqrt(totalPairs * 2));
-      gameBoard.style.display = 'grid';
-      gameBoard.style.gridTemplateColumns = `repeat(${columns}, 100px)`;
-      gameBoard.style.justifyContent = 'center';
-      gameBoard.style.gap = '10px';
-
-      cards.forEach(fruit => {
-        let card = document.createElement('div');
-        card.classList.add('card');
-        card.dataset.fruit = fruit;
-
-        let img = document.createElement('img');
-        img.src = fruit;
-        img.style.width = '50px';
-        img.style.height = '50px';
-        img.style.visibility = 'hidden';
-
-        card.appendChild(img);
-
-        card.addEventListener('click', () => flipCard(card));
-        gameBoard.appendChild(card);
-      });
-
-      // Iniciar la música cuando se inicia el juego
-      backgroundMusic.play().catch(e => {
-        console.log("No se pudo reproducir la música automáticamente:", e);
-      });
-
-      timer = setInterval(() => {
-        timeLeft--;
-        timeDisplay.textContent = timeLeft;
-        if (timeLeft <= 0) {
-          clearInterval(timer);
-          backgroundMusic.pause();  // Pausa la música al perder
-          soundLose.play();
-          alert(`Se acabó el tiempo! Puntuación final: ${score}`);
-          gameBoard.innerHTML = '';
+      setTimeout(() => {
+        img1.style.visibility = 'hidden';
+        img2.style.visibility = 'hidden';
+        if (attemptsLeft === 0) {
+          endGame(false, "attempts");
         }
-      }, 1000);
+      }, 700);
     }
-
-    function flipCard(card) {
-      if (flippedCards.length >= 2 || flippedCards.includes(card) || card.classList.contains('matched')) {
-        return;
-      }
-
-      soundSelect.currentTime = 0;
-      soundSelect.play();
-
-      let img = card.querySelector('img');
-      img.style.visibility = 'visible';
-      flippedCards.push(card);
-
-      if (flippedCards.length === 2) {
-        checkMatch();
-      }
-    }
-
-    function checkMatch() {
-      let [card1, card2] = flippedCards;
-      let img1 = card1.querySelector('img');
-      let img2 = card2.querySelector('img');
-
-      if (card1.dataset.fruit === card2.dataset.fruit) {
-        card1.classList.add('matched');
-        card2.classList.add('matched');
-        score += 10;
-        matchedPairs++;
-        scoreDisplay.textContent = score;
-
-        if (matchedPairs === totalPairs) {
-          clearInterval(timer);
-          backgroundMusic.pause();  // Pausa la música al ganar
-          soundWin.play();
-          alert(`¡Ganaste! Puntuación final: ${score}`);
-          gameBoard.innerHTML = '';
-        }
-      } else {
-        setTimeout(() => {
-          img1.style.visibility = 'hidden';
-          img2.style.visibility = 'hidden';
-        }, 1000);
-      }
-      flippedCards = [];
-    }
-  </script>
-</body>
-</html>
+    flippedCards = [];
+  }
+</script>
+{% endblock %}

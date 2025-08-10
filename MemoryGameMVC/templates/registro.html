@@ -1,12 +1,10 @@
 {% load static %}
-
 <!DOCTYPE html>
 <html lang="es">
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>Memory Game - Iniciar Sesión</title>
-    <link rel="stylesheet" href="{% static 'css/login.css' %}" />
+    <title>Memory Game - Regístrate</title>
     <link href="https://fonts.googleapis.com/css2?family=Satisfy&display=swap" rel="stylesheet" />
 </head>
 <body>
@@ -17,12 +15,14 @@
 
         <form method="POST">
             {% csrf_token %}
+            <input type="email" name="usercorreo" placeholder="Correo" required />
             <input type="text" name="username" placeholder="Usuario" required />
             <input type="password" name="password" placeholder="Contraseña" required />
-            <button type="submit">Iniciar sesión</button>
+            <input type="password" name="confiPasswor" placeholder="Confirmar Contraseña" required />
+            <button type="submit">Registrarse</button>
         </form>
 
-        <p>¿Aún no tienes una cuenta? <a id="ir_registro" href="{% url 'registro' %}">Regístrate</a></p>
+        <p>¿Ya tienes cuenta? <a id="ir_registro" href="{% url 'login' %}">Inicia sesión</a></p>
     </div>
 </body>
 </html>
