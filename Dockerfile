@@ -1,27 +1,9 @@
-FROM python:3.12.6-slim
-
+FROM python:3.13-slim
+ENV PYTHONDONTWRITEBYTECODE=1 PYTHONUNBUFFERED=1
 WORKDIR /app
-
+RUN apt-get update && apt-get install -y --no-install-recommends build-essential && rm -rf /var/lib/apt/lists/*
 COPY requirements.txt .
-
-RUN apt-get update && apt-get install -y \
-    gcc \
-    libmariadb-dev \
-    libmariadb-dev-compat \
-    build-essential \
-    pkg-config \
-    netcat-openbsd \
-    && pip install --upgrade pip \
-    && pip install -r requirements.txt \
-    && apt-get remove -y gcc build-essential \
-    && apt-get autoremove -y \
-    && apt-get clean
-
+RUN pip install --no-cache-dir -r requirements.txt
 COPY . .
-
-RUN chmod +x wait-for-db.sh
-
 EXPOSE 8000
-
-CMD ["./wait-for-db.sh", "python", "manage.py", "runserver", "0.0.0.0:8000"]
-
+CMD sh -c "python manage.py migrate && python manage.py runserver 0.0.0.0:8000"
